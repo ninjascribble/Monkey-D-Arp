@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { AudioEngine } from "./audio/AudioEngine"
 import { Voice } from "./audio/Voice"
 import { NOTES } from "./audio/scales"
@@ -11,12 +11,12 @@ export default function App() {
   const scale = "dorian"
   const octave = 4
   const engine = new AudioEngine()
-  
+
   engineRef.current = engine
 
   const voice = new Voice(engine, {
     attack: 0.02,
-    decay: 0.15,
+    decay: 0.8,
     sustain: 0.6,
     release: 0.12,
     volume: 0.25,
@@ -32,7 +32,7 @@ export default function App() {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1>Browser Arpeggiator</h1>
+      <h1>Monkey D. Arp</h1>
 
       <button
         onClick={() => {
