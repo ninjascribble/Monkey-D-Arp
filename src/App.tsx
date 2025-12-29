@@ -63,7 +63,10 @@ export default function App() {
 
       <select
         value={key}
-        onChange={(e) => setKey(e.target.value as keyof typeof NOTES)}
+        onChange={(e) => {
+          setKey(e.target.value as keyof typeof NOTES)
+          stepRef.current = 0
+        }}
       >
         {Object.keys(NOTES).map((k) => (
           <option key={k} value={k}>
