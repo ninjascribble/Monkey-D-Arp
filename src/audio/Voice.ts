@@ -23,25 +23,32 @@ export class Voice {
 
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
+    const epsilon = 0.0001
+    const filter = ctx.createBiquadFilter()
 
-    osc.type = "sawtooth"
+    osc.type = "triangle"
     osc.frequency.value = freq * Math.pow(2, this.params.octave)
 
-    gain.gain.setValueAtTime(0, time)
-    gain.gain.linearRampToValueAtTime(
+    gain.gain.setValueAtTime(epsilon, time)
+    gain.gain.exponentialRampToValueAtTime(
       this.params.volume,
       time + this.params.attack
     )
-    gain.gain.linearRampToValueAtTime(
+    gain.gain.exponentialRampToValueAtTime(
       this.params.volume * this.params.sustain,
       time + this.params.attack + this.params.decay
     )
-    gain.gain.linearRampToValueAtTime(
-      0,
+    gain.gain.exponentialRampToValueAtTime(
+      epsilon,
       time + duration + this.params.release
     )
 
-    osc.connect(gain)
+    filter.type = "lowpass"
+    filter.frequency.value = 1800
+    filter.Q.value = 0.7
+
+    osc.connect(filter)
+    filter.connect(gain)
     gain.connect(this.engine.masterGain)
 
     osc.start(time)

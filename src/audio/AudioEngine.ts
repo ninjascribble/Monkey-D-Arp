@@ -3,10 +3,9 @@ export class AudioEngine {
   masterGain: GainNode
 
   tempo = 120
-  timeSignature: [number, number] = [4, 4]
-
   private nextNoteTime = 0
-  private lookahead = 0.1 // seconds
+  private lookahead = 0.1
+  private intervalId: number | null = null
 
   constructor() {
     this.context = new AudioContext()
@@ -15,15 +14,11 @@ export class AudioEngine {
     this.masterGain.connect(this.context.destination)
   }
 
-  setMasterVolume(v: number) {
-    this.masterGain.gain.value = v
-  }
-
   secondsPerBeat() {
     return 60 / this.tempo
   }
 
-  schedule(callback: (time: number) => void) {
+  private schedule(callback: (time: number) => void) {
     const now = this.context.currentTime
 
     while (this.nextNoteTime < now + this.lookahead) {
@@ -32,8 +27,22 @@ export class AudioEngine {
     }
   }
 
-  startScheduler(callback: (time: number) => void) {
-    this.nextNoteTime = this.context.currentTime
-    setInterval(() => this.schedule(callback), 25)
+  start(callback: (time: number) => void) {
+    if (this.intervalId !== null) return
+
+    this.nextNoteTime =
+      this.context.currentTime + this.secondsPerBeat()
+
+    this.intervalId = window.setInterval(
+      () => this.schedule(callback),
+      25
+    )
+  }
+
+  stop() {
+    if (this.intervalId !== null) {
+      clearInterval(this.intervalId)
+      this.intervalId = null
+    }
   }
 }

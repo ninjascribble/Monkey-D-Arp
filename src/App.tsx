@@ -7,42 +7,27 @@ import { getScaleFrequencies } from "./audio/getScaleFrequencies"
 export default function App() {
   const engineRef = useRef<AudioEngine | null>(null)
   const stepRef = useRef(0)
-  const key = "E"
-  const scale = "phrygian"
+  const key = "D"
+  const scale = "dorian"
   const octave = 4
+  const engine = new AudioEngine()
+  
+  engineRef.current = engine
 
-  useEffect(() => {
-    const engine = new AudioEngine()
-    engineRef.current = engine
+  const voice = new Voice(engine, {
+    attack: 0.02,
+    decay: 0.15,
+    sustain: 0.6,
+    release: 0.12,
+    volume: 0.25,
+    octave: 0,
+  })
 
-    const voice = new Voice(engine, {
-      attack: 0.01,
-      decay: 0.1,
-      sustain: 0.7,
-      release: 0.2,
-      volume: 0.3,
-      octave: 0,
-    })
-
-    const sequence = getScaleFrequencies(
-      key,
-      scale,
-      octave
-    )
-
-    engine.startScheduler((time) => {
-      const note =
-        sequence[stepRef.current % sequence.length]
-
-      voice.playNote(
-        note,
-        time,
-        engine.secondsPerBeat() * 0.9
-      )
-
-      stepRef.current++
-    })
-  }, [])
+  const sequence = getScaleFrequencies(
+    key,
+    scale,
+    octave
+  )
 
 
   return (
@@ -50,9 +35,27 @@ export default function App() {
       <h1>Browser Arpeggiator</h1>
 
       <button
-        onClick={() => engineRef.current?.context.resume()}
+        onClick={() => {
+          const engine = engineRef.current
+          if (!engine) return
+
+          stepRef.current = 0
+          engine.context.resume()
+          engine.start((time) => {
+            const note =
+              sequence[stepRef.current % sequence.length]
+
+            voice.playNote(
+              note,
+              time,
+              engine.secondsPerBeat() * 0.75
+            )
+
+            stepRef.current++
+          })
+        }}
       >
-        Start Audio
+        Start
       </button>
 
       {/* Global controls go here */}
